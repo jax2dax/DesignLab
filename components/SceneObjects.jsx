@@ -1,5 +1,11 @@
 import ShapeMesh from "./ShapeMesh";
 
 export default function SceneObjects({ data }) {
-  return data.map((obj, i) => <ShapeMesh key={i} {...obj} />);
+  return Object.entries(data).map(([groupName, shapes]) => (
+    <group name={groupName} key={groupName}>
+      {shapes.map((obj, i) => (
+        <ShapeMesh key={`${groupName}-${i}`} {...obj} />
+      ))}
+    </group>
+  ));
 }
