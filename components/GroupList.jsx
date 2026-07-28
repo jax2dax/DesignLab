@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 
-export default function GroupList({ data, onDeleteGroup, onDeleteShape, onEditShape }) {
-  const [editingKey, setEditingKey] = useState(null); // e.g. "wall-0"
+export default function GroupList({ data, onDeleteGroup, onDeleteShape, onEditShape, selected, onToggleSelect }) {
+  const [editingKey, setEditingKey] = useState(null);
   const [editText, setEditText] = useState("");
   const [error, setError] = useState(null);
 
@@ -16,12 +16,10 @@ export default function GroupList({ data, onDeleteGroup, onDeleteShape, onEditSh
     setEditText(JSON.stringify(shape, null, 2));
     setError(null);
   }
-
   function cancelEdit() {
     setEditingKey(null);
     setError(null);
   }
-
   function saveEdit(groupName, index) {
     let parsed;
     try {
@@ -40,12 +38,17 @@ export default function GroupList({ data, onDeleteGroup, onDeleteShape, onEditSh
       {groupNames.map((groupName) => (
         <div key={groupName} className="border rounded px-3 py-2">
           <div className="flex items-center justify-between text-sm mb-1">
-            <span className="font-medium">
+            <label className="flex items-center gap-2 font-medium cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selected.has(groupName)}
+                onChange={() => onToggleSelect(groupName)}
+              />
               {groupName}{" "}
-              <span className="text-gray-500">
+              <span className="text-gray-500 font-normal">
                 ({data[groupName].length} mesh{data[groupName].length !== 1 ? "es" : ""})
               </span>
-            </span>
+            </label>
             <button
               onClick={() => onDeleteGroup(groupName)}
               className="text-red-600 hover:text-red-800 text-xs font-medium px-2 py-0.5 rounded hover:bg-red-50"
@@ -63,22 +66,17 @@ export default function GroupList({ data, onDeleteGroup, onDeleteShape, onEditSh
                 <li key={key} className="text-xs border-t pt-1">
                   {!isEditing ? (
                     <div className="flex items-center justify-between">
-                      <span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(key)}
+                          onChange={() => onToggleSelect(key)}
+                        />
                         {shape.type} — pos [{shape.pos.join(", ")}]
-                      </span>
+                      </label>
                       <span className="flex gap-2">
-                        <button
-                          onClick={() => startEdit(groupName, index, shape)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => onDeleteShape(groupName, index)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          Delete
-                        </button>
+                        <button onClick={() => startEdit(groupName, index, shape)} className="text-blue-600 hover:text-blue-800">Edit</button>
+                        <button onClick={() => onDeleteShape(groupName, index)} className="text-red-600 hover:text-red-800">Delete</button>
                       </span>
                     </div>
                   ) : (
@@ -91,18 +89,8 @@ export default function GroupList({ data, onDeleteGroup, onDeleteShape, onEditSh
                       />
                       {error && <p className="text-red-600">{error}</p>}
                       <div className="flex gap-2">
-                        <button
-                          onClick={() => saveEdit(groupName, index)}
-                          className="bg-blue-600 text-white rounded px-2 py-0.5 hover:bg-blue-700"
-                        >
-                          Save changes
-                        </button>
-                        <button
-                          onClick={cancelEdit}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          Cancel
-                        </button>
+                        <button onClick={() => saveEdit(groupName, index)} className="bg-blue-600 text-white rounded px-2 py-0.5 hover:bg-blue-700">Save changes</button>
+                        <button onClick={cancelEdit} className="text-gray-500 hover:text-gray-700">Cancel</button>
                       </div>
                     </div>
                   )}

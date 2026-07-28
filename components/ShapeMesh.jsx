@@ -1,5 +1,5 @@
 export default function ShapeMesh({ type, size, radius, pos, color, preview = false }) {
-  const finalColor = color || "#4488ff"; // default when none provided
+  const finalColor = color || "#4488ff";
 
   let geometry;
   switch (type) {
@@ -20,7 +20,7 @@ export default function ShapeMesh({ type, size, radius, pos, color, preview = fa
         color={finalColor}
         transparent={preview}
         opacity={preview ? 0.35 : 1}
-        wireframe={preview}
+        depthWrite={!preview} // prevents the translucent ghost from occluding things behind it oddly
       />
     </mesh>
   );
