@@ -1,25 +1,36 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NumberStepper from "./NumberStepper";
 import { presets } from "@/data/presets";
 
-export default function InputPanel({ onSubmit }) {
-  // --- preset quick-add ---
+export default function InputPanel({ onSubmit, onDraftChange }) {
   const [selectedPreset, setSelectedPreset] = useState("");
-
   function handlePresetAdd() {
     if (!selectedPreset) return;
     onSubmit(selectedPreset, presets[selectedPreset]);
     setSelectedPreset("");
   }
 
-  // --- manual structured builder ---
   const [groupName, setGroupName] = useState("");
   const [shapeType, setShapeType] = useState("cube");
   const [pos, setPos] = useState({ x: 0, y: 0, z: 0 });
   const [size, setSize] = useState({ x: 1, y: 1, z: 1 });
   const [radius, setRadius] = useState(1);
+  const [color, setColor] = useState("#4488ff");
   const [error, setError] = useState(null);
+
+  function buildShape() {
+    return shapeType === "sphere"
+      ? { type: "sphere", radius, pos: [pos.x, pos.y, pos.z], color }
+      : { type: "cube", size: [size.x, size.y, size.z], pos: [pos.x, pos.y, pos.z], color };
+  }
+
+  // live preview: broadcast the current draft on every relevant change
+  useEffect(() => {
+    onDraftChange(buildShape());
+    // clear the preview if this component unmounts
+    return () => onDraftChange(null);
+  }, [shapeType, pos.x, pos.y, pos.z, size.x, size.y, size.z, radius, color]);
 
   function handleManualSubmit() {
     setError(null);
@@ -27,18 +38,11 @@ export default function InputPanel({ onSubmit }) {
       setError("Group name is required.");
       return;
     }
-
-    const shape =
-      shapeType === "sphere"
-        ? { type: "sphere", radius, pos: [pos.x, pos.y, pos.z] }
-        : { type: "cube", size: [size.x, size.y, size.z], pos: [pos.x, pos.y, pos.z] };
-
-    onSubmit(groupName.trim(), [shape]);
+    onSubmit(groupName.trim(), [buildShape()]);
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Preset quick-add */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Add a preset</label>
         <div className="flex gap-2">
@@ -49,9 +53,7 @@ export default function InputPanel({ onSubmit }) {
           >
             <option value="">Choose...</option>
             {Object.keys(presets).map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
+              <option key={name} value={name}>{name}</option>
             ))}
           </select>
           <button
@@ -66,7 +68,6 @@ export default function InputPanel({ onSubmit }) {
 
       <hr />
 
-      {/* Manual structured builder */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Group name</label>
         <input
@@ -109,6 +110,14 @@ export default function InputPanel({ onSubmit }) {
             <NumberStepper label="r" value={radius} onChange={setRadius} />
           </>
         )}
+
+        <label className="text-sm font-medium mt-1">Color</label>
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="w-16 h-8 border rounded cursor-pointer"
+        />
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 

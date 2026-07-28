@@ -7,6 +7,7 @@ import testScene from "@/data/testScene.json";
 
 export default function Home() {
   const [sceneData, setSceneData] = useState(testScene);
+  const [previewShape, setPreviewShape] = useState(null);
 
   function addGroup(groupName, shapes) {
     setSceneData((prev) => ({
@@ -40,7 +41,7 @@ export default function Home() {
     <div className="flex flex-col md:flex-row h-screen w-screen">
       <aside className="w-full md:w-1/4 h-full p-4 border-r border-gray-200 overflow-y-auto flex flex-col gap-4">
         <h2 className="text-lg font-semibold">Controls</h2>
-        <InputPanel onSubmit={addGroup} />
+        <InputPanel onSubmit={addGroup} onDraftChange={setPreviewShape} />
 
         <h2 className="text-lg font-semibold mt-4">Groups</h2>
         <GroupList
@@ -52,7 +53,7 @@ export default function Home() {
       </aside>
 
       <main className="w-full md:w-3/4 h-full">
-        <Scene data={sceneData} />
+        <Scene data={sceneData} previewShape={previewShape} />
       </main>
     </div>
   );

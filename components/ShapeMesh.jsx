@@ -1,8 +1,10 @@
-export default function ShapeMesh({ type, size, radius, pos }) {
+export default function ShapeMesh({ type, size, radius, pos, color, preview = false }) {
+  const finalColor = color || "#4488ff"; // default when none provided
+
   let geometry;
   switch (type) {
     case "cube":
-      geometry = <boxGeometry args={size} />; // size = [x, y, z]
+      geometry = <boxGeometry args={size} />;
       break;
     case "sphere":
       geometry = <sphereGeometry args={[radius, 32, 32]} />;
@@ -14,7 +16,12 @@ export default function ShapeMesh({ type, size, radius, pos }) {
   return (
     <mesh position={pos}>
       {geometry}
-      <meshStandardMaterial color="steelblue" />
+      <meshStandardMaterial
+        color={finalColor}
+        transparent={preview}
+        opacity={preview ? 0.35 : 1}
+        wireframe={preview}
+      />
     </mesh>
   );
 }
