@@ -1,13 +1,5 @@
 {
-  "wall": [
-    { "type": "cube", "size": [1, 1, 1], "pos": [0, 0, 0] },
-    { "type": "cube", "size": [2, 2, 2], "pos": [3, 0, 0] }
-  ],
-  "roof": [
-    { "type": "sphere", "radius": 1, "pos": [-3, 1, 0] },
-    { "type": "sphere", "radius": 0.5, "pos": [0, 3, -2] }
-    
-  ],
+  
    "platform": [
    {
   "type": "cube",

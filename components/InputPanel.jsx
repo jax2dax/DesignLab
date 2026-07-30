@@ -33,19 +33,24 @@ export default function InputPanel({ onSubmit, onDraftChange }) {
   }
 
   // single source of truth — includes color, metalness, roughness
-  function buildShape() {
-    const base =
-      shapeType === "sphere"
-        ? { type: "sphere", radius, pos: [pos.x, pos.y, pos.z] }
-        : { type: "cube", size: [size.x, size.y, size.z], pos: [pos.x, pos.y, pos.z] };
-    return { ...base, color, metalness, roughness };
-  }
+ const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 }); // stored in degrees for human-friendly input
 
-  useEffect(() => {
-    onDraftChange(buildShape());
-    return () => onDraftChange(null);
-  }, [shapeType, pos.x, pos.y, pos.z, size.x, size.y, size.z, radius, color, metalness, roughness]);
-
+function buildShape() {
+  const base =
+    shapeType === "sphere"
+      ? { type: "sphere", radius, pos: [pos.x, pos.y, pos.z] }
+      : { type: "cube", size: [size.x, size.y, size.z], pos: [pos.x, pos.y, pos.z] };
+  const rotationRad = [
+    (rotation.x * Math.PI) / 180,
+    (rotation.y * Math.PI) / 180,
+    (rotation.z * Math.PI) / 180,
+  ];
+  return { ...base, color, metalness, roughness, rotation: rotationRad };
+}
+useEffect(() => {
+  onDraftChange(buildShape());
+  return () => onDraftChange(null);
+}, [shapeType, pos.x, pos.y, pos.z, rotation.x, rotation.y, rotation.z, size.x, size.y, size.z, radius, color, metalness, roughness]);
   function handleManualSubmit() {
     setError(null);
     if (!groupName.trim()) {
@@ -112,6 +117,12 @@ export default function InputPanel({ onSubmit, onDraftChange }) {
           <NumberStepper label="y" value={pos.y} onChange={(v) => setPos({ ...pos, y: v })} />
           <NumberStepper label="z" value={pos.z} onChange={(v) => setPos({ ...pos, z: v })} />
         </div>
+        <label className="text-sm font-medium mt-1">Rotation (degrees)</label>
+<div className="flex gap-2">
+  <NumberStepper label="x" value={rotation.x} step={15} onChange={(v) => setRotation({ ...rotation, x: v })} />
+  <NumberStepper label="y" value={rotation.y} step={15} onChange={(v) => setRotation({ ...rotation, y: v })} />
+  <NumberStepper label="z" value={rotation.z} step={15} onChange={(v) => setRotation({ ...rotation, z: v })} />
+</div>
 
         {shapeType === "cube" ? (
           <>

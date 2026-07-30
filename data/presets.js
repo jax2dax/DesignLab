@@ -2,78 +2,244 @@ export const presets = {
   roof: [{ type: "cube", size: [4, 0.2, 4], pos: [0, 3, 0] }],
   wall: [{ type: "cube", size: [1, 2, 0.2], pos: [0, 1, 0] }],
   pillar: [{ type: "cube", size: [0.3, 3, 0.3], pos: [0, 1.5, 0] }],
+  
   house: [
-  // Foundation
-  { type: "cube", size: [8, 0.4, 8], pos: [0, -0.2, 0] },
+    {
+      "type": "cube",
+      "size": [16, 0.5, 16],
+      "pos": [0, -0.25, 0],
+      "color": "#6d4c41",
+      "roughness": 1
+    },
 
-  // Floor
-  { type: "cube", size: [7.6, 0.2, 7.6], pos: [0, 0.1, 0] },
+    {
+      "type": "cube",
+      "size": [12, 0.3, 12],
+      "pos": [0, 0.15, 0],
+      "color": "#c8b08a",
+      "roughness": 0.9
+    },
 
-  // =====================
-  // Walls
-  // =====================
-  { type: "cube", size: [8, 3, 0.2], pos: [0, 1.5, -4] },   // Back
-  { type: "cube", size: [8, 3, 0.2], pos: [0, 1.5, 4] },    // Front top
-  { type: "cube", size: [0.2, 3, 8], pos: [-4, 1.5, 0] },   // Left
-  { type: "cube", size: [0.2, 3, 8], pos: [4, 1.5, 0] },    // Right
+    {
+      "type": "cube",
+      "size": [12, 4, 0.3],
+      "pos": [0, 2, -6],
+      "color": "#ece7dc"
+    },
+    {
+      "type": "cube",
+      "size": [12, 4, 0.3],
+      "pos": [0, 2, 6],
+      "color": "#ece7dc"
+    },
+    {
+      "type": "cube",
+      "size": [0.3, 4, 12],
+      "pos": [-6, 2, 0],
+      "color": "#ece7dc"
+    },
+    {
+      "type": "cube",
+      "size": [0.3, 4, 12],
+      "pos": [6, 2, 0],
+      "color": "#ece7dc"
+    },
 
-  // Door frame
-  { type: "cube", size: [2.8, 1, 0.2], pos: [0, 2.5, 4] },
-  { type: "cube", size: [0.2, 2, 0.2], pos: [-1.4, 1, 4] },
-  { type: "cube", size: [0.2, 2, 0.2], pos: [1.4, 1, 4] },
+    {
+      "type": "cube",
+      "size": [4, 0.25, 3],
+      "pos": [0, 2.6, 6.2],
+      "color": "#5d4037"
+    },
 
-  // =====================
-  // Roof
-  // =====================
-  {
-    type: "cube",
-    size: [8.6, 0.25, 4.6],
-    pos: [0, 3.6, -1.2],
-    rot: [25, 0, 0]
-  },
-  {
-    type: "cube",
-    size: [8.6, 0.25, 4.6],
-    pos: [0, 3.6, 1.2],
-    rot: [-25, 0, 0]
-  },
+    {
+      "type": "cube",
+      "size": [3.5, 0.25, 2.8],
+      "pos": [0, 5.2, 0],
+      "rotation": [0.55, 0, 0],
+      "color": "#8d6e63"
+    },
+    {
+      "type": "cube",
+      "size": [3.5, 0.25, 2.8],
+      "pos": [0, 5.2, 0],
+      "rotation": [-0.55, 0, 0],
+      "color": "#8d6e63"
+    },
 
-  // Roof ridge
-  { type: "cube", size: [8.2, 0.2, 0.25], pos: [0, 4.45, 0] },
+    {
+      "type": "cube",
+      "size": [12.8, 0.25, 5],
+      "pos": [0, 4.7, -2.6],
+      "rotation": [0.45, 0, 0],
+      "color": "#8d6e63"
+    },
+    {
+      "type": "cube",
+      "size": [12.8, 0.25, 5],
+      "pos": [0, 4.7, 2.6],
+      "rotation": [-0.45, 0, 0],
+      "color": "#8d6e63"
+    },
 
-  // =====================
-  // Porch
-  // =====================
-  { type: "cube", size: [3, 0.2, 2], pos: [0, 0.1, 5] },
-  { type: "cube", size: [3.2, 0.2, 2.2], pos: [0, 2.7, 5] },
+    {
+      "type": "cube",
+      "size": [1.8, 3, 0.2],
+      "pos": [0, 1.5, 6.15],
+      "color": "#5d4037"
+    },
 
-  // Porch pillars
-  { type: "cube", size: [0.2, 2.6, 0.2], pos: [-1.3, 1.3, 6] },
-  { type: "cube", size: [0.2, 2.6, 0.2], pos: [1.3, 1.3, 6] },
+    {
+      "type": "cube",
+      "size": [2, 2, 0.1],
+      "pos": [-3.5, 2, 6.16],
+      "color": "#80d8ff",
+      "metalness": 0.9,
+      "roughness": 0.05
+    },
+    {
+      "type": "cube",
+      "size": [2, 2, 0.1],
+      "pos": [3.5, 2, 6.16],
+      "color": "#80d8ff",
+      "metalness": 0.9,
+      "roughness": 0.05
+    },
 
-  // =====================
-  // Corner pillars
-  // =====================
-  { type: "cube", size: [0.3, 3, 0.3], pos: [-4, 1.5, -4] },
-  { type: "cube", size: [0.3, 3, 0.3], pos: [4, 1.5, -4] },
-  { type: "cube", size: [0.3, 3, 0.3], pos: [-4, 1.5, 4] },
-  { type: "cube", size: [0.3, 3, 0.3], pos: [4, 1.5, 4] },
+    {
+      "type": "cube",
+      "size": [0.1, 2, 2],
+      "pos": [-6.05, 2, -3],
+      "color": "#80d8ff",
+      "metalness": 0.9,
+      "roughness": 0.05
+    },
+    {
+      "type": "cube",
+      "size": [0.1, 2, 2],
+      "pos": [-6.05, 2, 3],
+      "color": "#80d8ff",
+      "metalness": 0.9,
+      "roughness": 0.05
+    },
+    {
+      "type": "cube",
+      "size": [0.1, 2, 2],
+      "pos": [6.05, 2, -3],
+      "color": "#80d8ff",
+      "metalness": 0.9,
+      "roughness": 0.05
+    },
+    {
+      "type": "cube",
+      "size": [0.1, 2, 2],
+      "pos": [6.05, 2, 3],
+      "color": "#80d8ff",
+      "metalness": 0.9,
+      "roughness": 0.05
+    },
 
-  // =====================
-  // Windows
-  // =====================
-  { type: "cube", size: [1.2, 1.2, 0.1], pos: [-2.3, 1.8, 4.01] },
-  { type: "cube", size: [1.2, 1.2, 0.1], pos: [2.3, 1.8, 4.01] },
+    {
+      "type": "cube",
+      "size": [4, 0.25, 3],
+      "pos": [0, 0.2, 7.5],
+      "color": "#b08968"
+    },
 
-  { type: "cube", size: [0.1, 1.2, 1.2], pos: [-4.01, 1.8, -2] },
-  { type: "cube", size: [0.1, 1.2, 1.2], pos: [-4.01, 1.8, 2] },
+    {
+      "type": "cube",
+      "size": [0.25, 3, 0.25],
+      "pos": [-1.8, 1.5, 8.7],
+      "color": "#8d6e63"
+    },
+    {
+      "type": "cube",
+      "size": [0.25, 3, 0.25],
+      "pos": [1.8, 1.5, 8.7],
+      "color": "#8d6e63"
+    },
 
-  { type: "cube", size: [0.1, 1.2, 1.2], pos: [4.01, 1.8, -2] },
-  { type: "cube", size: [0.1, 1.2, 1.2], pos: [4.01, 1.8, 2] },
+    {
+      "type": "cube",
+      "size": [0.8, 2.5, 0.8],
+      "pos": [-3.5, 5.8, -2],
+      "color": "#9e9e9e"
+    },
 
-  // =====================
-  // Chimney
-  // =====================
-  { type: "cube", size: [0.8, 2, 0.8], pos: [-2.8, 4.6, -1] },
-]
+    {
+      "type": "cube",
+      "size": [0.5, 4.5, 0.5],
+      "pos": [-6, 2.25, -6],
+      "color": "#d4af37",
+      "metalness": 1,
+      "roughness": 0.25
+    },
+    {
+      "type": "cube",
+      "size": [0.5, 4.5, 0.5],
+      "pos": [6, 2.25, -6],
+      "color": "#d4af37",
+      "metalness": 1,
+      "roughness": 0.25
+    },
+    {
+      "type": "cube",
+      "size": [0.5, 4.5, 0.5],
+      "pos": [-6, 2.25, 6],
+      "color": "#d4af37",
+      "metalness": 1,
+      "roughness": 0.25
+    },
+    {
+      "type": "cube",
+      "size": [0.5, 4.5, 0.5],
+      "pos": [6, 2.25, 6],
+      "color": "#d4af37",
+      "metalness": 1,
+      "roughness": 0.25
+    },
+
+    {
+      "type": "cube",
+      "size": [2, 2, 2],
+      "pos": [5.5, 1, 5.5],
+      "rotation": [
+        0,
+        2.356194490192345,
+        0
+      ],
+      "color": "#d4af37",
+      "metalness": 1,
+      "roughness": 0.25
+    },
+
+    {
+      "type": "cube",
+      "size": [1.2, 1.2, 1.2],
+      "pos": [-5.5, 0.8, 5.5],
+      "rotation": [
+        0,
+        2.356194490192345,
+        0
+      ],
+      "color": "#00e5ff",
+      "metalness": 1,
+      "roughness": 0.05
+    },
+
+    {
+      "type": "cube",
+      "size": [1.5, 0.15, 1.5],
+      "pos": [0, 6.1, 0],
+      "rotation": [
+        0,
+        2.356194490192345,
+        0
+      ],
+      "color": "#d4af37",
+      "metalness": 1,
+      "roughness": 0.25
+    }
+  ]
+
 };
