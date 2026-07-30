@@ -5,6 +5,7 @@ import InputPanel from "@/components/InputPanel";
 import GroupList from "@/components/GroupList";
 import ToolBar from "@/components/ToolBar";
 import testScene from "@/data/testScene.json";
+import LightControls from "@/components/LightControls";
 
 function getSelectedRefs(sceneData, selected) {
   const refs = [];
@@ -24,7 +25,12 @@ export default function Home() {
   const [selected, setSelected] = useState(new Set());
   const [moveStep, setMoveStep] = useState(1);
   const [scaleStep, setScaleStep] = useState(0.5);
-
+//light state
+const [lightSettings, setLightSettings] = useState({
+  ambientIntensity: 0.4,
+  directionalIntensity: 1.2,
+  directionalPos: [5, 10, 5],
+});
   function addGroup(groupName, shapes) {
     setSceneData((prev) => ({
       ...prev,
@@ -127,6 +133,7 @@ export default function Home() {
             </button>
           )}
         </div>
+        <LightControls lightSettings={lightSettings} setLightSettings={setLightSettings} />
         <GroupList
           data={sceneData}
           onDeleteGroup={deleteGroup}
@@ -138,7 +145,12 @@ export default function Home() {
       </aside>
 
       <main className="w-full md:w-3/4 h-full relative">
-        <Scene data={sceneData} previewShape={previewShape} selected={selected} />
+        <Scene
+  data={sceneData}
+  previewShape={previewShape}
+  selected={selected}
+  lightSettings={lightSettings}
+/>
         <ToolBar
           moveStep={moveStep}
           setMoveStep={setMoveStep}

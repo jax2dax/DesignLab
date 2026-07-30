@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import NumberStepper from "./NumberStepper";
 import { presets } from "@/data/presets";
+import { materials } from "@/data/materials";
 
 export default function InputPanel({ onSubmit, onDraftChange }) {
   const [selectedPreset, setSelectedPreset] = useState("");
@@ -17,20 +18,33 @@ export default function InputPanel({ onSubmit, onDraftChange }) {
   const [size, setSize] = useState({ x: 1, y: 1, z: 1 });
   const [radius, setRadius] = useState(1);
   const [color, setColor] = useState("#4488ff");
+  const [materialPreset, setMaterialPreset] = useState("");
+  const [metalness, setMetalness] = useState(0);
+  const [roughness, setRoughness] = useState(0.5);
   const [error, setError] = useState(null);
 
-  function buildShape() {
-    return shapeType === "sphere"
-      ? { type: "sphere", radius, pos: [pos.x, pos.y, pos.z], color }
-      : { type: "cube", size: [size.x, size.y, size.z], pos: [pos.x, pos.y, pos.z], color };
+  function applyPreset(name) {
+    setMaterialPreset(name);
+    if (materials[name]) {
+      setColor(materials[name].color);
+      setMetalness(materials[name].metalness);
+      setRoughness(materials[name].roughness);
+    }
   }
 
-  // live preview: broadcast the current draft on every relevant change
+  // single source of truth — includes color, metalness, roughness
+  function buildShape() {
+    const base =
+      shapeType === "sphere"
+        ? { type: "sphere", radius, pos: [pos.x, pos.y, pos.z] }
+        : { type: "cube", size: [size.x, size.y, size.z], pos: [pos.x, pos.y, pos.z] };
+    return { ...base, color, metalness, roughness };
+  }
+
   useEffect(() => {
     onDraftChange(buildShape());
-    // clear the preview if this component unmounts
     return () => onDraftChange(null);
-  }, [shapeType, pos.x, pos.y, pos.z, size.x, size.y, size.z, radius, color]);
+  }, [shapeType, pos.x, pos.y, pos.z, size.x, size.y, size.z, radius, color, metalness, roughness]);
 
   function handleManualSubmit() {
     setError(null);
@@ -50,6 +64,7 @@ export default function InputPanel({ onSubmit, onDraftChange }) {
             value={selectedPreset}
             onChange={(e) => setSelectedPreset(e.target.value)}
             className="border rounded px-2 py-1 text-sm flex-1"
+            style={{ background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" }}
           >
             <option value="">Choose...</option>
             {Object.keys(presets).map((name) => (
@@ -59,14 +74,15 @@ export default function InputPanel({ onSubmit, onDraftChange }) {
           <button
             onClick={handlePresetAdd}
             disabled={!selectedPreset}
-            className="bg-gray-800 text-white rounded px-3 py-1 text-sm disabled:opacity-40"
+            className="rounded px-3 py-1 text-sm disabled:opacity-40"
+            style={{ background: "var(--color-accent)", color: "var(--color-accent-fg)" }}
           >
             Add
           </button>
         </div>
       </div>
 
-      <hr />
+      <hr style={{ borderColor: "var(--color-border)" }} />
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium">Group name</label>
@@ -76,6 +92,7 @@ export default function InputPanel({ onSubmit, onDraftChange }) {
           onChange={(e) => setGroupName(e.target.value)}
           placeholder="e.g. wall"
           className="border rounded px-2 py-1 text-sm"
+          style={{ background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" }}
         />
 
         <label className="text-sm font-medium mt-1">Shape</label>
@@ -83,6 +100,7 @@ export default function InputPanel({ onSubmit, onDraftChange }) {
           value={shapeType}
           onChange={(e) => setShapeType(e.target.value)}
           className="border rounded px-2 py-1 text-sm"
+          style={{ background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" }}
         >
           <option value="cube">Cube</option>
           <option value="sphere">Sphere</option>
@@ -115,15 +133,47 @@ export default function InputPanel({ onSubmit, onDraftChange }) {
         <input
           type="color"
           value={color}
-          onChange={(e) => setColor(e.target.value)}
+          onChange={(e) => { setColor(e.target.value); setMaterialPreset(""); }}
           className="w-16 h-8 border rounded cursor-pointer"
         />
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        <label className="text-sm font-medium mt-1">Material preset</label>
+        <select
+          value={materialPreset}
+          onChange={(e) => applyPreset(e.target.value)}
+          className="border rounded px-2 py-1 text-sm"
+          style={{ background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" }}
+        >
+          <option value="">Custom</option>
+          {Object.keys(materials).map((name) => (
+            <option key={name} value={name}>{name}</option>
+          ))}
+        </select>
+
+        <label className="text-sm font-medium mt-1">
+          Metalness <span style={{ color: "var(--color-fg-muted)" }}>({metalness.toFixed(2)})</span>
+        </label>
+        <input
+          type="range" min="0" max="1" step="0.01"
+          value={metalness}
+          onChange={(e) => { setMetalness(parseFloat(e.target.value)); setMaterialPreset(""); }}
+        />
+
+        <label className="text-sm font-medium mt-1">
+          Roughness <span style={{ color: "var(--color-fg-muted)" }}>({roughness.toFixed(2)})</span>
+        </label>
+        <input
+          type="range" min="0" max="1" step="0.01"
+          value={roughness}
+          onChange={(e) => { setRoughness(parseFloat(e.target.value)); setMaterialPreset(""); }}
+        />
+
+        {error && <p className="text-sm" style={{ color: "var(--color-danger)" }}>{error}</p>}
 
         <button
           onClick={handleManualSubmit}
-          className="bg-blue-600 text-white rounded px-3 py-1.5 mt-1 text-sm hover:bg-blue-700"
+          className="rounded px-3 py-1.5 mt-1 text-sm"
+          style={{ background: "var(--color-accent)", color: "var(--color-accent-fg)" }}
         >
           Enter
         </button>

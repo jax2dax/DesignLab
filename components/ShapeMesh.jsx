@@ -1,7 +1,8 @@
 import { Edges } from "@react-three/drei";
+import { resolveMaterial } from "@/data/materials";
 
-export default function ShapeMesh({ type, size, radius, pos, color, preview = false, selected = false }) {
-  const finalColor = color || "#4488ff";
+export default function ShapeMesh({ type, size, radius, pos, rotation = [0, 0, 0], preview = false, selected = false, ...shape }) {
+  const { color, metalness, roughness } = resolveMaterial({ type, size, radius, pos, ...shape });
 
   let geometry;
   switch (type) {
@@ -16,10 +17,12 @@ export default function ShapeMesh({ type, size, radius, pos, color, preview = fa
   }
 
   return (
-    <mesh position={pos}>
+    <mesh position={pos} rotation={rotation}>
       {geometry}
       <meshStandardMaterial
-        color={finalColor}
+        color={color}
+        metalness={metalness}
+        roughness={roughness}
         transparent={preview}
         opacity={preview ? 0.35 : 1}
         depthWrite={!preview}
