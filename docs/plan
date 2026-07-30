@@ -1,0 +1,35 @@
+ok now i have something to be added, right now there is no mechanism to save this:
+
+when thi sgets saved (i want this to be in the format of my own script) , when this scene gets saved , i want it to be saved/exported in a manner that doesnt collide with anything,  when the scene gets saved/exported I want it in a systematic, flexible way, :
+
+for example  the exported scene can contain the custom lights that the person added, lets say 
+
+biome [
+
+lights:[],
+
+platform:[x, y, z ]  (this is how much space the scene take (for example 20 by 20) people can increase their platform in their setting
+
+scene:[
+
+contains every mesh  and stuff(main)],
+
+camera:[],
+
+animation:[(i am not sure if animation get here but idk)],
+
+customfiles:[] (later i might let people upload a photo and use it as a material. but for now this is it,
+
+sceneScale:[1,1,1](1 by default (basically fit the person created a scene that contains a house that is 20 blocks by 20 by 20 blocks and lets say another person created a house but his house is 2x2x2 (and i want thm in a world, 1 is too big and one is too small(an apple), so i set scale the 2x2x2 one to 10, and they will roughtly eb the same size. 
+
+...(more things that in the future)
+
+]
+
+the reason i wanted to do this is because when people export it or inport it into another canvas, i might want to remove their lights and then add my own for of lights. And also i might want to check the platform length and if it is too big i might want to avoid generating it , and throw in an warning/error instead , (the world might have its own platform rules (max/min).
+
+
+
+(and also later i am planning for people to export their work and add their biome into a world (collection of biomes of different biomes/ may or may not be from  different people),. 
+
+SO WHEN People export it , i want it to be in a certain script (my custom script) so that each of the scene elements (biome) gets exported as a code, and pasting that into my compiler (scene generator will generate the exact biome you are working on) , i want precision and flexibility, because this is one of the main parts of the work,  be specific about the files to change and where, if possible provide a full replacement of files that are planned to be edited for this matter. now balance my request and 

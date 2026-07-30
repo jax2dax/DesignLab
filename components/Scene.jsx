@@ -5,13 +5,15 @@ import SceneObjects from "./SceneObjects";
 import ShapeMesh from "./ShapeMesh";
 import Lights from "./Lights";
 
-export default function Scene({ data, previewShape, selected, lightSettings }) {
+export default function Scene({ data, previewShape, selected, lightSettings, camera, sceneScale = [1, 1, 1] }) {
   return (
-    <Canvas camera={{ position: [8, 8, 8], fov: 50 }} style={{ width: "100%", height: "100%" }}>
+    <Canvas camera={{ position: camera?.position ?? [8, 8, 8], fov: camera?.fov ?? 50 }} style={{ width: "100%", height: "100%" }}>
       <Lights {...lightSettings} />
-      <Environment preset="city" /> {/* gives metalness something real to reflect */}
-      <SceneObjects data={data} selected={selected} />
-      {previewShape && <ShapeMesh {...previewShape} preview />}
+      <Environment preset="city" />
+      <group scale={sceneScale}>
+        <SceneObjects data={data} selected={selected} />
+        {previewShape && <ShapeMesh {...previewShape} preview />}
+      </group>
       <OrbitControls />
       <axesHelper args={[5]} />
       <gridHelper args={[20, 20]} />

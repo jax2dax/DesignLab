@@ -4,8 +4,9 @@ import Scene from "@/components/Scene";
 import InputPanel from "@/components/InputPanel";
 import GroupList from "@/components/GroupList";
 import ToolBar from "@/components/ToolBar";
-import testScene from "@/data/testScene.json";
 import LightControls from "@/components/LightControls";
+import ExportImportPanel from "@/components/ExportImportPanel";
+import testScene from "@/data/testScene.json";
 
 function getSelectedRefs(sceneData, selected) {
   const refs = [];
@@ -25,12 +26,18 @@ export default function Home() {
   const [selected, setSelected] = useState(new Set());
   const [moveStep, setMoveStep] = useState(1);
   const [scaleStep, setScaleStep] = useState(0.5);
-//light state
-const [lightSettings, setLightSettings] = useState({
-  ambientIntensity: 0.4,
-  directionalIntensity: 1.2,
-  directionalPos: [5, 10, 5],
-});
+
+  const [lightSettings, setLightSettings] = useState({
+    ambientIntensity: 0.4,
+    directionalIntensity: 1.2,
+    directionalPos: [5, 10, 5],
+  });
+
+  // new: biome-level state
+  const [platform, setPlatform] = useState([20, 5, 20]); // footprint this biome occupies
+  const [camera, setCamera] = useState({ position: [8, 8, 8], fov: 50 });
+  const [sceneScale, setSceneScale] = useState([1, 1, 1]);
+
   function addGroup(groupName, shapes) {
     setSceneData((prev) => ({
       ...prev,
@@ -117,6 +124,30 @@ const [lightSettings, setLightSettings] = useState({
     });
   }
 
+  // Loads an imported biome into every relevant piece of state at once.
+ // Open: full replace of the working world
+function handleOpenBiome(biome) {
+  setSceneData(biome.scene || {});
+  setPlatform(biome.platform || [20, 5, 20]);
+  setCamera(biome.camera || { position: [8, 8, 8], fov: 50 });
+  setSceneScale(biome.sceneScale || [1, 1, 1]);
+
+  const ambient = biome.lights?.find((l) => l.type === "ambient");
+  const directional = biome.lights?.find((l) => l.type === "directional");
+  setLightSettings({
+    ambientIntensity: ambient?.intensity ?? 0.4,
+    directionalIntensity: directional?.intensity ?? 1.2,
+    directionalPos: directional?.position ?? [5, 10, 5],
+  });
+
+  setSelected(new Set());
+}
+
+// Import: merge translated groups into the current sceneData, nothing else changes
+function handleImportMerge(mergedGroups) {
+  setSceneData((prev) => ({ ...prev, ...mergedGroups }));
+}
+
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen">
       <aside className="w-full md:w-1/4 h-full p-4 border-r overflow-y-auto flex flex-col gap-4"
@@ -142,15 +173,28 @@ const [lightSettings, setLightSettings] = useState({
           selected={selected}
           onToggleSelect={toggleSelect}
         />
+
+        <hr style={{ borderColor: "var(--color-border)" }} />
+        <ExportImportPanel
+  sceneData={sceneData}
+  lightSettings={lightSettings}
+  platform={platform}
+  camera={camera}
+  sceneScale={sceneScale}
+  onOpenBiome={handleOpenBiome}
+  onImportMerge={handleImportMerge}
+/>
       </aside>
 
       <main className="w-full md:w-3/4 h-full relative">
         <Scene
-  data={sceneData}
-  previewShape={previewShape}
-  selected={selected}
-  lightSettings={lightSettings}
-/>
+          data={sceneData}
+          previewShape={previewShape}
+          selected={selected}
+          lightSettings={lightSettings}
+          camera={camera}
+          sceneScale={sceneScale}
+        />
         <ToolBar
           moveStep={moveStep}
           setMoveStep={setMoveStep}
