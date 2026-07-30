@@ -1,4 +1,6 @@
-export default function ShapeMesh({ type, size, radius, pos, color, preview = false }) {
+import { Edges } from "@react-three/drei";
+
+export default function ShapeMesh({ type, size, radius, pos, color, preview = false, selected = false }) {
   const finalColor = color || "#4488ff";
 
   let geometry;
@@ -20,8 +22,11 @@ export default function ShapeMesh({ type, size, radius, pos, color, preview = fa
         color={finalColor}
         transparent={preview}
         opacity={preview ? 0.35 : 1}
-        depthWrite={!preview} // prevents the translucent ghost from occluding things behind it oddly
+        depthWrite={!preview}
+        emissive={selected ? "#22c55e" : "#000000"}
+        emissiveIntensity={selected ? 0.35 : 0}
       />
+      {selected && <Edges color="#22c55e" linewidth={2} />}
     </mesh>
   );
 }
