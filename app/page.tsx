@@ -8,6 +8,8 @@ import ToolBar from "@/components/ToolBar";
 import LightControls from "@/components/LightControls";
 import ExportImportPanel from "@/components/ExportImportPanel";
 import testScene from "@/data/testScene.json";
+import TopToolBar from "@/components/TopToolBar";
+import ScriptPanel from "@/components/ScriptPanel";
 
 function getSelectedRefs(sceneData, selected) {
   const refs = [];
@@ -29,6 +31,7 @@ export default function Home() {
   const [moveStep, setMoveStep] = useState(1);
   const [scaleStep, setScaleStep] = useState(0.5);
   const [draftOffset, setDraftOffset] = useState({ x: 0, y: 0, z: 0 });
+  const [scriptOpen, setScriptOpen] = useState(false);
 
   const [lightSettings, setLightSettings] = useState({
     ambientIntensity: 0.4,
@@ -57,7 +60,17 @@ export default function Home() {
       return new Set([key]);
     });
   }
-
+// Script Run always creates new shapes (mirrors AddMeshPanel's behavior) —
+// it never mutates the shapes it happened to display when opened from a selection.
+function handleRunScript(parsedRefs) {
+  setSceneData((prev) => {
+    const next = { ...prev };
+    parsedRefs.forEach(({ groupName, shape }) => {
+      next[groupName] = [...(next[groupName] || []), shape];
+    });
+    return next;
+  });
+}
   function editOneOnly(key) {
     setAddMeshOpen(false);
     setSelected(new Set([key]));
@@ -249,6 +262,13 @@ export default function Home() {
           onCommitDraft={commitDraft}
           onCancelDraft={cancelDraft}
         />
+        <TopToolBar scriptOpen={scriptOpen} onToggleScript={() => setScriptOpen((o) => !o)} />
+<ScriptPanel
+  sceneData={sceneData}
+  selected={selected}
+  onRunScript={handleRunScript}
+  open={scriptOpen}
+/>
       </main>
     </div>
   );
