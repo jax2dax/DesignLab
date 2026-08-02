@@ -1,6 +1,6 @@
-import { Code } from "lucide-react";
+import { Code, Sparkles } from "lucide-react";
 
-export default function TopToolBar({ scriptOpen, onToggleScript }) {
+export default function TopToolBar({ scriptOpen, onToggleScript, aiOpen, onToggleAi }) {
   return (
     <div className="absolute top-0 left-0 flex" style={{ margin: "5px" }}>
       <div className="flex gap-2 rounded-lg shadow-md p-2 border" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
@@ -16,6 +16,20 @@ export default function TopToolBar({ scriptOpen, onToggleScript }) {
         >
           <Code size={18} />
         </button>
+
+        <button
+          onClick={onToggleAi}
+          className="w-10 h-10 flex items-center justify-center rounded border"
+          style={
+            aiOpen
+              ? { background: "var(--color-accent)", color: "var(--color-accent-fg)", borderColor: "var(--color-accent)" }
+              : { borderColor: "var(--color-border)", color: "var(--color-fg)" }
+          }
+          title="Ask AI"
+        >
+          <Sparkles size={18} />
+        </button>
+
         {/* more buttons go here later, same w-10 h-10 pattern */}
       </div>
     </div>

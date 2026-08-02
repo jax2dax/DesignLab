@@ -10,6 +10,7 @@ import ExportImportPanel from "@/components/ExportImportPanel";
 import testScene from "@/data/testScene.json";
 import TopToolBar from "@/components/TopToolBar";
 import ScriptPanel from "@/components/ScriptPanel";
+import AiTextPanel from "@/components/AiTextPanel";
 
 function getSelectedRefs(sceneData, selected) {
   const refs = [];
@@ -42,7 +43,27 @@ export default function Home() {
   const [platform, setPlatform] = useState([20, 5, 20]);
   const [camera, setCamera] = useState({ position: [8, 8, 8], fov: 50 });
   const [sceneScale, setSceneScale] = useState([1, 1, 1]);
+const [aiOpen, setAiOpen] = useState(false);
+const [preAiSnapshot, setPreAiSnapshot] = useState(null); // undo slot
+//ai pannel
+function handleAiRunScript(parsedRefs) {
+  setPreAiSnapshot(sceneData); // snapshot taken right before applying, not before typing
+  setSceneData((prev) => {
+    const next = { ...prev };
+    parsedRefs.forEach(({ groupName, shape }) => {
+      next[groupName] = [...(next[groupName] || []), shape];
+    });
+    return next;
+  });
+}
 
+function undoAiChange() {
+  if (preAiSnapshot) {
+    setSceneData(preAiSnapshot);
+    setPreAiSnapshot(null);
+  }
+}
+////
   // --- selection ---
   function selectMesh(key, shiftKey) {
     setDraftOffset({ x: 0, y: 0, z: 0 });
@@ -140,6 +161,7 @@ function handleRunScript(parsedRefs) {
     });
     setSelected(new Set());
   }
+  
 
   function moveSelected(dx, dy, dz) {
     setSceneData((prev) => {
@@ -262,12 +284,24 @@ function handleRunScript(parsedRefs) {
           onCommitDraft={commitDraft}
           onCancelDraft={cancelDraft}
         />
-        <TopToolBar scriptOpen={scriptOpen} onToggleScript={() => setScriptOpen((o) => !o)} />
+        <TopToolBar
+  scriptOpen={scriptOpen}
+  onToggleScript={() => setScriptOpen((o) => !o)}
+  aiOpen={aiOpen}
+  onToggleAi={() => setAiOpen((o) => !o)}
+/>
 <ScriptPanel
   sceneData={sceneData}
   selected={selected}
   onRunScript={handleRunScript}
   open={scriptOpen}
+/>
+<AiTextPanel
+  sceneData={sceneData}
+  onRunScript={handleAiRunScript}
+  open={aiOpen}
+  snapshotAvailable={!!preAiSnapshot}
+  onUndo={undoAiChange}
 />
       </main>
     </div>
