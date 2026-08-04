@@ -49,16 +49,10 @@ export default function Home() {
 const [aiOpen, setAiOpen] = useState(false);
 const [preAiSnapshot, setPreAiSnapshot] = useState(null); // undo slot
 const [langTestOpen, setLangTestOpen] = useState(true); // default open while you're testing
-//ai pannel
-function handleAiRunScript(parsedRefs) {
-  setPreAiSnapshot(sceneData); // snapshot taken right before applying, not before typing
-  setSceneData((prev) => {
-    const next = { ...prev };
-    parsedRefs.forEach(({ groupName, shape }) => {
-      next[groupName] = [...(next[groupName] || []), shape];
-    });
-    return next;
-  });
+//ai pannel // snapshot taken right before applying, not before typing
+function handleAiApply(nextScene) {
+  setPreAiSnapshot(sceneData);
+  setSceneData(nextScene);
 }
 
 function undoAiChange() {
@@ -321,7 +315,7 @@ function handleRunScript(parsedRefs) {
 />
 <AiTextPanel
   sceneData={sceneData}
-  onRunScript={handleAiRunScript}
+  onApply={handleAiApply}
   open={aiOpen}
   snapshotAvailable={!!preAiSnapshot}
   onUndo={undoAiChange}
