@@ -1,35 +1,87 @@
-ok now i have something to be added, right now there is no mechanism to save this:
+ok now, I am planning to add a Text box, this on is different, instead of Raw script, i want to take description of whatever the person wanted directly in english:, and send it to AI api and that will then process the request,  and send back , message, and pure script.(for now):
 
-when thi sgets saved (i want this to be in the format of my own script) , when this scene gets saved , i want it to be saved/exported in a manner that doesnt collide with anything,  when the scene gets saved/exported I want it in a systematic, flexible way, :
-
-for example  the exported scene can contain the custom lights that the person added, lets say 
-
-biome [
-
-lights:[],
-
-platform:[x, y, z ]  (this is how much space the scene take (for example 20 by 20) people can increase their platform in their setting
-
-scene:[
-
-contains every mesh  and stuff(main)],
-
-camera:[],
-
-animation:[(i am not sure if animation get here but idk)],
-
-customfiles:[] (later i might let people upload a photo and use it as a material. but for now this is it,
-
-sceneScale:[1,1,1](1 by default (basically fit the person created a scene that contains a house that is 20 blocks by 20 by 20 blocks and lets say another person created a house but his house is 2x2x2 (and i want thm in a world, 1 is too big and one is too small(an apple), so i set scale the 2x2x2 one to 10, and they will roughtly eb the same size. 
-
-...(more things that in the future)
-
-]
-
-the reason i wanted to do this is because when people export it or inport it into another canvas, i might want to remove their lights and then add my own for of lights. And also i might want to check the platform length and if it is too big i might want to avoid generating it , and throw in an warning/error instead , (the world might have its own platform rules (max/min).
+this what I am plannig todo,  I am planning to send the the entered text, the script and translation(this is basically the scripts identity, and how it relates to json, and what it means(a documentation to the script), and then code of the current biome(the current working meshes and everything so the AI have context what is happening).,and then a Hard prompt telling it what to do with the script, the format it should return, and what is should return. and i am planning to send that for every request to the AI. I know this may not be the best(sending the whole documentation on every request is bulky, but giving the AI a database to refer to seems like a hustle, so i founf out the simplest way is to do this. so.. the user enter this on the text box: (IMPORTANT:keep in mind that after the ai sent a script response, and that script is ran, i want to give the people the option to undo what has just been don by the ai in their biome/workspace if they click undo changes it will go back to the original
 
 
 
-(and also later i am planning for people to export their work and add their biome into a world (collection of biomes of different biomes/ may or may not be from  different people),. 
 
-SO WHEN People export it , i want it to be in a certain script (my custom script) so that each of the scene elements (biome) gets exported as a code, and pasting that into my compiler (scene generator will generate the exact biome you are working on) , i want precision and flexibility, because this is one of the main parts of the work,  be specific about the files to change and where, if possible provide a full replacement of files that are planned to be edited for this matter. now balance my request and 
+
+"I want to add a cube on top of the shere" >and then presses enter then what happens is I send API request to the ai that looks something like this :
+
+prompt:" You are an AI assistant that helps with 3d things and ...(description of the 3d software)  . on the object below the request of the client and what they need. read the message and then interprate it to what they want and how it relates to the given environment
+
+###1(first identify what is the action they wanted to take? is it edit? add/generate? delete?)after that identify how much information is missing (like if they didnt specify position ) the other, like if they didnt specify exact roughness value/color, or something like thatyou can take the context and understand what they want and fill the value. (**like if they say add a banana, then you can understand what the  material and color should be).
+
+(**another scenaario is if there is a banana they already made and they are telling you to  change its location, so they might say something vague like this :-"move the banana infront of the cube. So I want the AI to first Identify the action(edit), and then the target (the banana), so the AI should look through the sent biome/world/environment and look through the script(refer to the docs to analize it) and look for something that looks like a banana")
+
+
+
+//importance
+
+##1)the actionis not clear(neither add/generate,edit, delete)
+
+abandon and do nothing: and include "action not clear" on the message response.
+
+##2)the target is not found at all
+
+abandon and do nothing: and include "be more specific target not found "text on the response text.
+
+##3)there are multiple unidentifyable possible targets(**if the person said "move the cube to the front" and there are multiple identical cubes") in this case select one and perform the action on it: and say "multiple targets found, still exectuted" on the response message.
+
+(**if the person said "move the cubes to the front" and there are multiple identical cubes") then the AI will move all 3 identical ones to the front")
+
+##4)if the intended transformation is totally vague like "move the cube", (**this is very vague, it raises the question "to where?") so Do nothing: and include "transformation info too vague" on the response"
+
+##5 if the intended transformation is partially complete(still not exact) (like "move the cube to the front" 
+
+
+
+key Nb:
+
+the more the info the better: good messsage is "move the black cube named stone by 5 units away from the the yellow shere"
+
+"move the cube" and "move the cube from where it is" shouldnt be treated the same way(since the first one is purely lack of detail, but the 2nd one is "no opposition to where it moves"(so the ai can randomly choose/decide to move it elsewhere .)
+
+
+
+
+
+if it doesnt make sense or is completely unrelated with your job, then  return 
+
+
+
+on the above guide i put in for you, the "(**" means that those are examples/scenarios for you to understand more and generate a better final mega result. so i want a prompt that adresses those scenarios"
+
+
+#################creating own language
+
+
+##I am planning to modify the script and turn it into a language, so that there are verbs involved, so currently there is only the script(which is just another form of a json object , but with tweaks for convineance), but i am going ot add lookup system:
+
+"for eg":  claw cube2 
+ claw= will be keyword of my language (meaning to select)
+2hen this is ran, i want it to do a loop on all the available mesh names, and find that specific one named cube2(and open it i guess):
+
+
+so that each mesh has its own name , so i will use that name to point to that mesh specifically, and then edit it.
+so since each mesh's name are uique.
+
+so next one will be
+claw "cube2"  = [{heregoes the replacement script for the seleceted mesh}]
+so it might be { cube2 {
+  group: house
+  pos: 0, 3.1, 7.2
+  size: 4.5, 0.25, 3.5
+  rotation: 0, 0, 0
+  color: #5d4037
+}}
+i made it array so that maybe i can add more than i  meshs into it and maybe group it, (but for now it is ok as [], but it can also be claw "cube2"  = {};
+
+so if this is ran, the parser is going to dismantle this and understand this , what each keyword does , expected text,  be very specific on how splitting works
+
+
+for now add this :
+i want flexibility on the language that we are creating, isnce i might change/add keywords : so prepare the language parser amaizingly.
+
+i want full documentation  on how it works ad 
+

@@ -11,6 +11,8 @@ import testScene from "@/data/testScene.json";
 import TopToolBar from "@/components/TopToolBar";
 import ScriptPanel from "@/components/ScriptPanel";
 import AiTextPanel from "@/components/AiTextPanel";
+import LanguageTestPanel from "@/components/LanguageTestPanel";
+import { ensureNames, generateUniqueName } from "@/lib/names";
 
 function getSelectedRefs(sceneData, selected) {
   const refs = [];
@@ -25,7 +27,8 @@ function getSelectedRefs(sceneData, selected) {
 }
 
 export default function Home() {
-  const [sceneData, setSceneData] = useState(testScene);
+  //const [sceneData, setSceneData] = useState(testScene);
+  const [sceneData, setSceneData] = useState(() => ensureNames(testScene));
   const [previewShape, setPreviewShape] = useState(null);
   const [selected, setSelected] = useState(new Set());
   const [addMeshOpen, setAddMeshOpen] = useState(false);
@@ -45,6 +48,7 @@ export default function Home() {
   const [sceneScale, setSceneScale] = useState([1, 1, 1]);
 const [aiOpen, setAiOpen] = useState(false);
 const [preAiSnapshot, setPreAiSnapshot] = useState(null); // undo slot
+const [langTestOpen, setLangTestOpen] = useState(true); // default open while you're testing
 //ai pannel
 function handleAiRunScript(parsedRefs) {
   setPreAiSnapshot(sceneData); // snapshot taken right before applying, not before typing
@@ -128,8 +132,21 @@ function handleRunScript(parsedRefs) {
 
   // --- CRUD ---
   function addGroup(groupName, shapes) {
-    setSceneData((prev) => ({ ...prev, [groupName]: [...(prev[groupName] || []), ...shapes] }));
-  }
+  setSceneData((prev) => {
+    const named = [];
+    let working = prev; // grows as we assign names, so later shapes in the same batch don't collide with earlier ones
+    shapes.forEach((shape) => {
+      const name = shape.name || generateUniqueName(shape.type, working);
+      const withName = { ...shape, name };
+      named.push(withName);
+      working = { ...working, [groupName]: [...(working[groupName] || []), withName] };
+    });
+    return {
+      ...prev,
+      [groupName]: [...(prev[groupName] || []), ...named],
+    };
+  });
+}
   function deleteRef(groupName, index) {
     setSceneData((prev) => ({ ...prev, [groupName]: prev[groupName].filter((_, i) => i !== index) }));
     setSelected((prev) => {
@@ -196,7 +213,8 @@ function handleRunScript(parsedRefs) {
 
   // --- file open/import ---
   function handleOpenBiome(biome) {
-    setSceneData(biome.scene || {});
+    //setSceneData(biome.scene || {});
+    setSceneData(ensureNames(biome.scene || {}));
     setPlatform(biome.platform || [20, 5, 20]);
     setCamera(biome.camera || { position: [8, 8, 8], fov: 50 });
     setSceneScale(biome.sceneScale || [1, 1, 1]);
@@ -210,8 +228,8 @@ function handleRunScript(parsedRefs) {
     setSelected(new Set());
   }
   function handleImportMerge(mergedGroups) {
-    setSceneData((prev) => ({ ...prev, ...mergedGroups }));
-  }
+  setSceneData((prev) => ensureNames({ ...prev, ...mergedGroups }));
+}
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen">
@@ -295,6 +313,11 @@ function handleRunScript(parsedRefs) {
   selected={selected}
   onRunScript={handleRunScript}
   open={scriptOpen}
+/>
+<LanguageTestPanel
+  sceneData={sceneData}
+  onApply={setSceneData}
+  open={langTestOpen}
 />
 <AiTextPanel
   sceneData={sceneData}

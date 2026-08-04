@@ -1,6 +1,8 @@
 "use client";
+import { useState } from "react";
 import NumberStepper from "./NumberStepper";
 import { materials } from "@/data/materials";
+import { isNameAvailable } from "@/lib/names";
 
 const RAD_TO_DEG = 180 / Math.PI;
 const DEG_TO_RAD = Math.PI / 180;
@@ -35,7 +37,42 @@ export default function SelectedPanel({ sceneData, selected, onEditShape, onDele
         function patch(fields) {
           onEditShape(groupName, index, { ...shape, ...fields });
         }
+function NameField({ sceneData, shape, groupName, index, onEditShape }) {
+  const [draft, setDraft] = useState(shape.name || "");
+  const [warn, setWarn] = useState(null);
 
+  function commit() {
+    const trimmed = draft.trim();
+    if (!trimmed) {
+      setWarn("Name cannot be empty.");
+      setDraft(shape.name || "");
+      return;
+    }
+    if (!isNameAvailable(sceneData, trimmed, shape.name)) {
+      setWarn(`"${trimmed}" is already used by another mesh.`);
+      setDraft(shape.name || "");
+      return;
+    }
+    setWarn(null);
+    onEditShape(groupName, index, { ...shape, name: trimmed });
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium">Name</label>
+      <input
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") { e.currentTarget.blur(); } }}
+        className="border rounded px-2 py-1 text-sm"
+        style={{ background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" }}
+      />
+      {warn && <p className="text-xs" style={{ color: "var(--color-danger)" }}>{warn}</p>}
+    </div>
+  );
+}
         return (
           <div key={key} className="border rounded p-3 flex flex-col gap-2" style={{ borderColor: "var(--color-border)" }}>
             <div className="flex items-center justify-between">
@@ -44,7 +81,7 @@ export default function SelectedPanel({ sceneData, selected, onEditShape, onDele
                 Delete
               </button>
             </div>
-
+<NameField sceneData={sceneData} shape={shape} groupName={groupName} index={index} onEditShape={onEditShape} />
             <label className="text-xs font-medium">Position</label>
             <div className="flex gap-2">
               {["x", "y", "z"].map((axis, i) => (
