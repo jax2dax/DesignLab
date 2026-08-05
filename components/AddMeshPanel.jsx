@@ -3,45 +3,38 @@ import { useState, useEffect } from "react";
 import NumberStepper from "./NumberStepper";
 import { presets } from "@/data/presets";
 import { materials } from "@/data/materials";
-
-const DEFAULTS = {
-  groupName: "",
-  shapeType: "cube",
-  pos: { x: 0, y: 0, z: 0 },
-  rotation: { x: 0, y: 0, z: 0 },
-  size: { x: 1, y: 1, z: 1 },
-  radius: 1,
-  color: "#4488ff",
-  materialPreset: "",
-  metalness: 0,
-  roughness: 0.5,
-};
+import { SHAPES, defaultFieldsFor } from "@/lib/shapes/registry";
 
 export default function AddMeshPanel({ onSubmit, onDraftChange, open, onOpenChange }) {
+  const shapeTypeKeys = Object.keys(SHAPES);
   const [selectedPreset, setSelectedPreset] = useState("");
-  const [groupName, setGroupName] = useState(DEFAULTS.groupName);
-  const [shapeType, setShapeType] = useState(DEFAULTS.shapeType);
-  const [pos, setPos] = useState(DEFAULTS.pos);
-  const [rotation, setRotation] = useState(DEFAULTS.rotation);
-  const [size, setSize] = useState(DEFAULTS.size);
-  const [radius, setRadius] = useState(DEFAULTS.radius);
-  const [color, setColor] = useState(DEFAULTS.color);
-  const [materialPreset, setMaterialPreset] = useState(DEFAULTS.materialPreset);
-  const [metalness, setMetalness] = useState(DEFAULTS.metalness);
-  const [roughness, setRoughness] = useState(DEFAULTS.roughness);
+  const [groupName, setGroupName] = useState("");
+  const [shapeType, setShapeType] = useState(shapeTypeKeys[0]);
+  const [pos, setPos] = useState({ x: 0, y: 0, z: 0 });
+  const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
+  const [shapeFields, setShapeFields] = useState(() => defaultFieldsFor(shapeTypeKeys[0]));
+  const [color, setColor] = useState("#4488ff");
+  const [materialPreset, setMaterialPreset] = useState("");
+  const [metalness, setMetalness] = useState(0);
+  const [roughness, setRoughness] = useState(0.5);
   const [error, setError] = useState(null);
 
+  const shapeDef = SHAPES[shapeType];
+
+  function handleShapeTypeChange(newType) {
+    setShapeType(newType);
+    setShapeFields(defaultFieldsFor(newType)); // reset to that shape's own defaults
+  }
+
   function resetForm() {
-    setGroupName(DEFAULTS.groupName);
-    setShapeType(DEFAULTS.shapeType);
-    setPos(DEFAULTS.pos);
-    setRotation(DEFAULTS.rotation);
-    setSize(DEFAULTS.size);
-    setRadius(DEFAULTS.radius);
-    setColor(DEFAULTS.color);
-    setMaterialPreset(DEFAULTS.materialPreset);
-    setMetalness(DEFAULTS.metalness);
-    setRoughness(DEFAULTS.roughness);
+    setGroupName("");
+    setPos({ x: 0, y: 0, z: 0 });
+    setRotation({ x: 0, y: 0, z: 0 });
+    setShapeFields(defaultFieldsFor(shapeType));
+    setColor("#4488ff");
+    setMaterialPreset("");
+    setMetalness(0);
+    setRoughness(0.5);
     setError(null);
   }
 
@@ -55,12 +48,10 @@ export default function AddMeshPanel({ onSubmit, onDraftChange, open, onOpenChan
   }
 
   function buildShape() {
-    const base =
-      shapeType === "sphere"
-        ? { type: "sphere", radius, pos: [pos.x, pos.y, pos.z] }
-        : { type: "cube", size: [size.x, size.y, size.z], pos: [pos.x, pos.y, pos.z] };
     return {
-      ...base,
+      type: shapeType,
+      pos: [pos.x, pos.y, pos.z],
+      ...shapeFields,
       rotation: [(rotation.x * Math.PI) / 180, (rotation.y * Math.PI) / 180, (rotation.z * Math.PI) / 180],
       color,
       metalness,
@@ -68,16 +59,12 @@ export default function AddMeshPanel({ onSubmit, onDraftChange, open, onOpenChan
     };
   }
 
-  // Only broadcasts a ghost while this panel is actually open — this is what
-  // stops the "ghost cube always sitting in the scene" problem: closed panel = no draft.
   useEffect(() => {
-    if (!open) {
-      onDraftChange(null);
-      return;
-    }
+    if (!open) { onDraftChange(null); return; }
     onDraftChange(buildShape());
     return () => onDraftChange(null);
-  }, [open, shapeType, pos.x, pos.y, pos.z, rotation.x, rotation.y, rotation.z, size.x, size.y, size.z, radius, color, metalness, roughness]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, shapeType, pos.x, pos.y, pos.z, rotation.x, rotation.y, rotation.z, JSON.stringify(shapeFields), color, metalness, roughness]);
 
   function handlePresetAdd() {
     if (!selectedPreset) return;
@@ -87,23 +74,18 @@ export default function AddMeshPanel({ onSubmit, onDraftChange, open, onOpenChan
 
   function handleManualSubmit() {
     setError(null);
-    if (!groupName.trim()) {
-      setError("Group name is required.");
-      return;
-    }
+    if (!groupName.trim()) { setError("Group name is required."); return; }
     onSubmit(groupName.trim(), [buildShape()]);
-    resetForm(); // fields go back to default immediately after a successful add
+    resetForm();
   }
 
   const inputStyle = { background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" };
 
   if (!open) {
     return (
-      <button
-        onClick={() => onOpenChange(true)}
+      <button onClick={() => onOpenChange(true)}
         className="w-full rounded px-3 py-2 text-sm font-medium border"
-        style={{ borderColor: "var(--color-border)", color: "var(--color-fg)", background: "var(--color-surface)" }}
-      >
+        style={{ borderColor: "var(--color-border)", color: "var(--color-fg)", background: "var(--color-surface)" }}>
         + Add mesh
       </button>
     );
@@ -113,9 +95,7 @@ export default function AddMeshPanel({ onSubmit, onDraftChange, open, onOpenChan
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Add mesh</h2>
-        <button onClick={() => onOpenChange(false)} className="text-xs" style={{ color: "var(--color-fg-muted)" }}>
-          Close
-        </button>
+        <button onClick={() => onOpenChange(false)} className="text-xs" style={{ color: "var(--color-fg-muted)" }}>Close</button>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -142,10 +122,9 @@ export default function AddMeshPanel({ onSubmit, onDraftChange, open, onOpenChan
           placeholder="e.g. wall" className="border rounded px-2 py-1 text-sm" style={inputStyle} />
 
         <label className="text-sm font-medium mt-1">Shape</label>
-        <select value={shapeType} onChange={(e) => setShapeType(e.target.value)}
+        <select value={shapeType} onChange={(e) => handleShapeTypeChange(e.target.value)}
           className="border rounded px-2 py-1 text-sm" style={inputStyle}>
-          <option value="cube">Cube</option>
-          <option value="sphere">Sphere</option>
+          {shapeTypeKeys.map((key) => <option key={key} value={key}>{SHAPES[key].label}</option>)}
         </select>
 
         <label className="text-sm font-medium mt-1">Position</label>
@@ -162,21 +141,27 @@ export default function AddMeshPanel({ onSubmit, onDraftChange, open, onOpenChan
           <NumberStepper label="z" value={rotation.z} step={15} onChange={(v) => setRotation({ ...rotation, z: v })} />
         </div>
 
-        {shapeType === "cube" ? (
-          <>
-            <label className="text-sm font-medium mt-1">Size</label>
-            <div className="flex gap-2">
-              <NumberStepper label="x" value={size.x} onChange={(v) => setSize({ ...size, x: v })} />
-              <NumberStepper label="y" value={size.y} onChange={(v) => setSize({ ...size, y: v })} />
-              <NumberStepper label="z" value={size.z} onChange={(v) => setSize({ ...size, z: v })} />
-            </div>
-          </>
-        ) : (
-          <>
-            <label className="text-sm font-medium mt-1">Radius</label>
-            <NumberStepper label="r" value={radius} onChange={setRadius} />
-          </>
-        )}
+        {/* Generated entirely from shapeDef.fields — never touched when a new shape is added */}
+        {shapeDef.fields.map((f) => (
+          <div key={f.key} className="flex flex-col gap-1">
+            <label className="text-sm font-medium mt-1 capitalize">{f.key}</label>
+            {f.type === "vec3" ? (
+              <div className="flex gap-2">
+                {["x", "y", "z"].map((axis, i) => (
+                  <NumberStepper key={axis} label={axis} value={shapeFields[f.key]?.[i] ?? f.default[i]}
+                    onChange={(v) => {
+                      const arr = [...(shapeFields[f.key] || f.default)];
+                      arr[i] = v;
+                      setShapeFields({ ...shapeFields, [f.key]: arr });
+                    }} />
+                ))}
+              </div>
+            ) : (
+              <NumberStepper label={f.key} value={shapeFields[f.key] ?? f.default}
+                onChange={(v) => setShapeFields({ ...shapeFields, [f.key]: Math.max(f.min ?? 0.1, v) })} />
+            )}
+          </div>
+        ))}
 
         <label className="text-sm font-medium mt-1">Color</label>
         <input type="color" value={color} onChange={(e) => { setColor(e.target.value); setMaterialPreset(""); }}
@@ -189,15 +174,11 @@ export default function AddMeshPanel({ onSubmit, onDraftChange, open, onOpenChan
           {Object.keys(materials).map((name) => <option key={name} value={name}>{name}</option>)}
         </select>
 
-        <label className="text-sm font-medium mt-1">
-          Metalness <span style={{ color: "var(--color-fg-muted)" }}>({metalness.toFixed(2)})</span>
-        </label>
+        <label className="text-sm font-medium mt-1">Metalness <span style={{ color: "var(--color-fg-muted)" }}>({metalness.toFixed(2)})</span></label>
         <input type="range" min="0" max="1" step="0.01" value={metalness}
           onChange={(e) => { setMetalness(parseFloat(e.target.value)); setMaterialPreset(""); }} />
 
-        <label className="text-sm font-medium mt-1">
-          Roughness <span style={{ color: "var(--color-fg-muted)" }}>({roughness.toFixed(2)})</span>
-        </label>
+        <label className="text-sm font-medium mt-1">Roughness <span style={{ color: "var(--color-fg-muted)" }}>({roughness.toFixed(2)})</span></label>
         <input type="range" min="0" max="1" step="0.01" value={roughness}
           onChange={(e) => { setRoughness(parseFloat(e.target.value)); setMaterialPreset(""); }} />
 

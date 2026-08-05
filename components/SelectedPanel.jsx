@@ -3,40 +3,11 @@ import { useState } from "react";
 import NumberStepper from "./NumberStepper";
 import { materials } from "@/data/materials";
 import { isNameAvailable } from "@/lib/names";
+import { getShapeDef } from "@/lib/shapes/registry";
 
 const RAD_TO_DEG = 180 / Math.PI;
 const DEG_TO_RAD = Math.PI / 180;
 
-export default function SelectedPanel({ sceneData, selected, onEditShape, onDeleteRef, onDeleteAll }) {
-  const refs = [];
-  Object.entries(sceneData).forEach(([groupName, shapes]) => {
-    shapes.forEach((shape, i) => {
-      if (selected.has(groupName) || selected.has(`${groupName}-${i}`)) {
-        refs.push({ groupName, index: i, shape });
-      }
-    });
-  });
-
-  if (refs.length === 0) return null;
-  const inputStyle = { background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" };
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Selected ({refs.length})</h2>
-        <button onClick={onDeleteAll} className="text-xs font-medium px-2 py-0.5 rounded"
-          style={{ color: "var(--color-danger)" }}>
-          Delete selected
-        </button>
-      </div>
-
-      {refs.map(({ groupName, index, shape }) => {
-        const key = `${groupName}-${index}`;
-        const rotDeg = (shape.rotation || [0, 0, 0]).map((r) => r * RAD_TO_DEG);
-
-        function patch(fields) {
-          onEditShape(groupName, index, { ...shape, ...fields });
-        }
 function NameField({ sceneData, shape, groupName, index, onEditShape }) {
   const [draft, setDraft] = useState(shape.name || "");
   const [warn, setWarn] = useState(null);
@@ -65,7 +36,7 @@ function NameField({ sceneData, shape, groupName, index, onEditShape }) {
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
-        onKeyDown={(e) => { if (e.key === "Enter") { e.currentTarget.blur(); } }}
+        onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
         className="border rounded px-2 py-1 text-sm"
         style={{ background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" }}
       />
@@ -73,6 +44,37 @@ function NameField({ sceneData, shape, groupName, index, onEditShape }) {
     </div>
   );
 }
+
+export default function SelectedPanel({ sceneData, selected, onEditShape, onDeleteRef, onDeleteAll }) {
+  const refs = [];
+  Object.entries(sceneData).forEach(([groupName, shapes]) => {
+    shapes.forEach((shape, i) => {
+      if (selected.has(groupName) || selected.has(`${groupName}-${i}`)) {
+        refs.push({ groupName, index: i, shape });
+      }
+    });
+  });
+
+  if (refs.length === 0) return null;
+  const inputStyle = { background: "var(--color-bg)", color: "var(--color-fg)", borderColor: "var(--color-border)" };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Selected ({refs.length})</h2>
+        <button onClick={onDeleteAll} className="text-xs font-medium px-2 py-0.5 rounded" style={{ color: "var(--color-danger)" }}>
+          Delete selected
+        </button>
+      </div>
+
+      {refs.map(({ groupName, index, shape }) => {
+        const key = `${groupName}-${index}`;
+        const rotDeg = (shape.rotation || [0, 0, 0]).map((r) => r * RAD_TO_DEG);
+
+        function patch(fields) {
+          onEditShape(groupName, index, { ...shape, ...fields });
+        }
+
         return (
           <div key={key} className="border rounded p-3 flex flex-col gap-2" style={{ borderColor: "var(--color-border)" }}>
             <div className="flex items-center justify-between">
@@ -81,7 +83,9 @@ function NameField({ sceneData, shape, groupName, index, onEditShape }) {
                 Delete
               </button>
             </div>
-<NameField sceneData={sceneData} shape={shape} groupName={groupName} index={index} onEditShape={onEditShape} />
+
+            <NameField sceneData={sceneData} shape={shape} groupName={groupName} index={index} onEditShape={onEditShape} />
+
             <label className="text-xs font-medium">Position</label>
             <div className="flex gap-2">
               {["x", "y", "z"].map((axis, i) => (
@@ -102,23 +106,22 @@ function NameField({ sceneData, shape, groupName, index, onEditShape }) {
               ))}
             </div>
 
-            {shape.type === "cube" ? (
-              <>
-                <label className="text-xs font-medium mt-1">Size</label>
-                <div className="flex gap-2">
-                  {["x", "y", "z"].map((axis, i) => (
-                    <NumberStepper key={axis} label={axis} value={shape.size[i]}
-                      onChange={(v) => { const size = [...shape.size]; size[i] = Math.max(0.1, v); patch({ size }); }} />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <label className="text-xs font-medium mt-1">Radius</label>
-                <NumberStepper label="r" value={shape.radius}
-                  onChange={(v) => patch({ radius: Math.max(0.1, v) })} />
-              </>
-            )}
+            {getShapeDef(shape.type)?.fields.map((f) => (
+              <div key={f.key}>
+                <label className="text-xs font-medium mt-1 capitalize">{f.key}</label>
+                {f.type === "vec3" ? (
+                  <div className="flex gap-2">
+                    {["x", "y", "z"].map((axis, i) => (
+                      <NumberStepper key={axis} label={axis} value={shape[f.key]?.[i] ?? f.default[i]}
+                        onChange={(v) => { const arr = [...(shape[f.key] || f.default)]; arr[i] = v; patch({ [f.key]: arr }); }} />
+                    ))}
+                  </div>
+                ) : (
+                  <NumberStepper label={f.key} value={shape[f.key] ?? f.default}
+                    onChange={(v) => patch({ [f.key]: Math.max(f.min ?? 0.1, v) })} />
+                )}
+              </div>
+            ))}
 
             <label className="text-xs font-medium mt-1">Color</label>
             <input type="color" value={shape.color || "#4488ff"}
@@ -137,15 +140,11 @@ function NameField({ sceneData, shape, groupName, index, onEditShape }) {
               {Object.keys(materials).map((name) => <option key={name} value={name}>{name}</option>)}
             </select>
 
-            <label className="text-xs font-medium mt-1">
-              Metalness <span style={{ color: "var(--color-fg-muted)" }}>({(shape.metalness ?? 0).toFixed(2)})</span>
-            </label>
+            <label className="text-xs font-medium mt-1">Metalness <span style={{ color: "var(--color-fg-muted)" }}>({(shape.metalness ?? 0).toFixed(2)})</span></label>
             <input type="range" min="0" max="1" step="0.01" value={shape.metalness ?? 0}
               onChange={(e) => patch({ metalness: parseFloat(e.target.value), material: undefined })} />
 
-            <label className="text-xs font-medium mt-1">
-              Roughness <span style={{ color: "var(--color-fg-muted)" }}>({(shape.roughness ?? 0.5).toFixed(2)})</span>
-            </label>
+            <label className="text-xs font-medium mt-1">Roughness <span style={{ color: "var(--color-fg-muted)" }}>({(shape.roughness ?? 0.5).toFixed(2)})</span></label>
             <input type="range" min="0" max="1" step="0.01" value={shape.roughness ?? 0.5}
               onChange={(e) => patch({ roughness: parseFloat(e.target.value), material: undefined })} />
           </div>

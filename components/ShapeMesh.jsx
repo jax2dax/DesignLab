@@ -1,20 +1,15 @@
+import { createElement } from "react";
+import * as THREE from "three";
 import { Edges } from "@react-three/drei";
 import { resolveMaterial } from "@/data/materials";
+import { getShapeDef } from "@/lib/shapes/registry";
 
-export default function ShapeMesh({ type, size, radius, pos, rotation = [0, 0, 0], preview = false, selected = false, onClick, ...shape }) {
-  const { color, metalness, roughness } = resolveMaterial({ type, size, radius, pos, ...shape });
+export default function ShapeMesh({ type, pos, rotation = [0, 0, 0], preview = false, selected = false, onClick, ...shape }) {
+  const shapeDef = getShapeDef(type);
+  if (!shapeDef) return null;
 
-  let geometry;
-  switch (type) {
-    case "cube":
-      geometry = <boxGeometry args={size} />;
-      break;
-    case "sphere":
-      geometry = <sphereGeometry args={[radius, 32, 32]} />;
-      break;
-    default:
-      return null;
-  }
+  const { color, metalness, roughness } = resolveMaterial({ type, pos, ...shape });
+  const geometry = createElement(shapeDef.geometryComponent, { args: shapeDef.geometryArgs(shape) });
 
   return (
     <mesh position={pos} rotation={rotation} onClick={onClick}>
@@ -26,6 +21,7 @@ export default function ShapeMesh({ type, size, radius, pos, rotation = [0, 0, 0
         transparent={preview}
         opacity={preview ? 0.35 : 1}
         depthWrite={!preview}
+        side={shapeDef.doubleSided ? THREE.DoubleSide : THREE.FrontSide}
         emissive={selected ? "#22c55e" : "#000000"}
         emissiveIntensity={selected ? 0.35 : 0}
       />
