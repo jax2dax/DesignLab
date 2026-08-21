@@ -14,8 +14,26 @@ import AiTextPanel from "@/components/AiTextPanel";
 import LanguageTestPanel from "@/components/LanguageTestPanel";
 import { ensureNames, generateUniqueName } from "@/lib/names";
 
-function getSelectedRefs(sceneData, selected) {
-  const refs = [];
+type Shape = {
+  name?: string;
+  type?: string;
+  pos: number[];
+  radius?: number;
+  size?: number[];
+  [key: string]: any;
+};
+type SceneData = Record<string, Shape[]>;
+type ScriptRef = { groupName: string; shape: Shape };
+type BiomeData = {
+  scene?: SceneData;
+  platform?: number[];
+  camera?: { position: number[]; fov: number };
+  sceneScale?: number[];
+  lights?: Array<{ type: string; intensity?: number; position?: number[] }>;
+};
+
+function getSelectedRefs(sceneData: SceneData, selected: Set<string>) {
+  const refs: Array<{ groupName: string; i: number }> = [];
   Object.entries(sceneData).forEach(([groupName, shapes]) => {
     shapes.forEach((shape, i) => {
       if (selected.has(groupName) || selected.has(`${groupName}-${i}`)) {
@@ -28,9 +46,9 @@ function getSelectedRefs(sceneData, selected) {
 
 export default function Home() {
   //const [sceneData, setSceneData] = useState(testScene);
-  const [sceneData, setSceneData] = useState(() => ensureNames(testScene));
-  const [previewShape, setPreviewShape] = useState(null);
-  const [selected, setSelected] = useState(new Set());
+  const [sceneData, setSceneData] = useState<SceneData>(() => ensureNames(testScene) as SceneData);
+  const [previewShape, setPreviewShape] = useState<Shape | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addMeshOpen, setAddMeshOpen] = useState(false);
   const [moveStep, setMoveStep] = useState(1);
   const [scaleStep, setScaleStep] = useState(0.5);
@@ -47,10 +65,10 @@ export default function Home() {
   const [camera, setCamera] = useState({ position: [8, 8, 8], fov: 50 });
   const [sceneScale, setSceneScale] = useState([1, 1, 1]);
 const [aiOpen, setAiOpen] = useState(false);
-const [preAiSnapshot, setPreAiSnapshot] = useState(null); // undo slot
+  const [preAiSnapshot, setPreAiSnapshot] = useState<SceneData | null>(null); // undo slot
 const [langTestOpen, setLangTestOpen] = useState(true); // default open while you're testing
 //ai pannel // snapshot taken right before applying, not before typing
-function handleAiApply(nextScene) {
+function handleAiApply(nextScene: SceneData) {
   setPreAiSnapshot(sceneData);
   setSceneData(nextScene);
 }
@@ -63,7 +81,7 @@ function undoAiChange() {
 }
 ////
   // --- selection ---
-  function selectMesh(key, shiftKey) {
+  function selectMesh(key: string | null, shiftKey: boolean) {
     setDraftOffset({ x: 0, y: 0, z: 0 });
     if (key === null) {
       setSelected(new Set());
@@ -81,7 +99,7 @@ function undoAiChange() {
   }
 // Script Run always creates new shapes (mirrors AddMeshPanel's behavior) —
 // it never mutates the shapes it happened to display when opened from a selection.
-function handleRunScript(parsedRefs) {
+function handleRunScript(parsedRefs: ScriptRef[]) {
   setSceneData((prev) => {
     const next = { ...prev };
     parsedRefs.forEach(({ groupName, shape }) => {
@@ -90,13 +108,13 @@ function handleRunScript(parsedRefs) {
     return next;
   });
 }
-  function editOneOnly(key) {
+  function editOneOnly(key: string) {
     setAddMeshOpen(false);
     setSelected(new Set([key]));
   }
 
   // --- staged move ---
-  function nudgeDraft(dx, dy, dz) {
+  function nudgeDraft(dx: number, dy: number, dz: number) {
     if (selected.size === 0) return;
     setDraftOffset((prev) => ({ x: prev.x + dx, y: prev.y + dy, z: prev.z + dz }));
   }
@@ -110,9 +128,9 @@ function handleRunScript(parsedRefs) {
   }
 
   useEffect(() => {
-    function handleKeyDown(e) {
+    function handleKeyDown(e: KeyboardEvent) {
       if (selected.size === 0) return;
-      if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) return;
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName ?? "")) return;
       if (e.key === "ArrowUp") { e.preventDefault(); nudgeDraft(0, moveStep, 0); }
       else if (e.key === "ArrowDown") { e.preventDefault(); nudgeDraft(0, -moveStep, 0); }
       else if (e.key === "ArrowLeft") { e.preventDefault(); nudgeDraft(-moveStep, 0, 0); }
@@ -125,9 +143,9 @@ function handleRunScript(parsedRefs) {
   }, [selected, moveStep, draftOffset]);
 
   // --- CRUD ---
-  function addGroup(groupName, shapes) {
+  function addGroup(groupName: string, shapes: Shape[]) {
   setSceneData((prev) => {
-    const named = [];
+    const named: Shape[] = [];
     let working = prev; // grows as we assign names, so later shapes in the same batch don't collide with earlier ones
     shapes.forEach((shape) => {
       const name = shape.name || generateUniqueName(shape.type, working);
@@ -141,7 +159,7 @@ function handleRunScript(parsedRefs) {
     };
   });
 }
-  function deleteRef(groupName, index) {
+  function deleteRef(groupName: string, index: number) {
     setSceneData((prev) => ({ ...prev, [groupName]: prev[groupName].filter((_, i) => i !== index) }));
     setSelected((prev) => {
       const next = new Set(prev);
@@ -149,7 +167,7 @@ function handleRunScript(parsedRefs) {
       return next;
     });
   }
-  function editShape(groupName, index, newShape) {
+  function editShape(groupName: string, index: number, newShape: Shape) {
     setSceneData((prev) => ({
       ...prev,
       [groupName]: prev[groupName].map((shape, i) => (i === index ? newShape : shape)),
@@ -174,7 +192,7 @@ function handleRunScript(parsedRefs) {
   }
   
 
-  function moveSelected(dx, dy, dz) {
+  function moveSelected(dx: number, dy: number, dz: number) {
     setSceneData((prev) => {
       const refs = getSelectedRefs(prev, selected);
       if (refs.length === 0) return prev;
@@ -188,7 +206,7 @@ function handleRunScript(parsedRefs) {
     });
   }
 
-  function scaleSelected(factor) {
+  function scaleSelected(factor: number) {
     setSceneData((prev) => {
       const refs = getSelectedRefs(prev, selected);
       if (refs.length === 0) return prev;
@@ -196,8 +214,10 @@ function handleRunScript(parsedRefs) {
       refs.forEach(({ groupName, i }) => {
         next[groupName] = next[groupName].map((shape, idx) => {
           if (idx !== i) return shape;
-          if (shape.type === "sphere") return { ...shape, radius: Math.max(0.1, shape.radius + factor) };
-          if (shape.type === "cube") return { ...shape, size: shape.size.map((s) => Math.max(0.1, s + factor)) };
+          if (shape.type === "sphere" && shape.radius !== undefined) {
+            return { ...shape, radius: Math.max(0.1, shape.radius + factor) };
+          }
+          if (shape.type === "cube" && shape.size) return { ...shape, size: shape.size.map((s) => Math.max(0.1, s + factor)) };
           return shape;
         });
       });
@@ -206,9 +226,9 @@ function handleRunScript(parsedRefs) {
   }
 
   // --- file open/import ---
-  function handleOpenBiome(biome) {
+  function handleOpenBiome(biome: BiomeData) {
     //setSceneData(biome.scene || {});
-    setSceneData(ensureNames(biome.scene || {}));
+    setSceneData(ensureNames(biome.scene || {}) as SceneData);
     setPlatform(biome.platform || [20, 5, 20]);
     setCamera(biome.camera || { position: [8, 8, 8], fov: 50 });
     setSceneScale(biome.sceneScale || [1, 1, 1]);
@@ -221,8 +241,8 @@ function handleRunScript(parsedRefs) {
     });
     setSelected(new Set());
   }
-  function handleImportMerge(mergedGroups) {
-  setSceneData((prev) => ensureNames({ ...prev, ...mergedGroups }));
+  function handleImportMerge(mergedGroups: SceneData) {
+  setSceneData((prev) => ensureNames({ ...prev, ...mergedGroups }) as SceneData);
 }
 
   return (
