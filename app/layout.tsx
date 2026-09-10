@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from 'next/script';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +29,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
+      <Script 
+          src="http://localhost:3000/tracker.js" 
+          data-key="4b7f327c-e3d7-48ba-b3c5-7fb8db06f5df"
+          strategy="afterInteractive" 
+        />
     </html>
   );
 }
