@@ -29,12 +29,18 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}
+        <script 
+          src="http://localhost:3000/tracker.js" 
+          data-key="4b7f327c-e3d7-48ba-b3c5-7fb8db06f5df"
+         // strategy="afterInteractive" 
+        />
         <Script 
           src="http://localhost:3000/tracker.js" 
           data-key="4b7f327c-e3d7-48ba-b3c5-7fb8db06f5df"
-          strategy="afterInteractive" 
+         // strategy="afterInteractive" 
         />
       </body>
+      
       
     </html>
   );
