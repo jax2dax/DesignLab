@@ -1,7 +1,7 @@
 /**simple demo for to be tracked by another tracker(nothing app related) */
 import { useState } from 'react';
 
-export default function ContactForm() {
+function ContactForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
