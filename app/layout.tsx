@@ -31,10 +31,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">{children}
         <Script
           src="https://jellyhookapp.vercel.app/tracker.js"
-          data-key="d8c350c9-a1b6-473a-81a5-223495a98b39"
+          data-key="5a4908a5-bc30-4d18-9d4d-34c3ef8f0dba"
           strategy="afterInteractive"
         />
-      </body>
+        </body>
       
       
     </html>
