@@ -29,11 +29,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}
-        <script src="https://jellyhookapp.vercel.app/tracker.js" data-key="cbf1a6da-544b-4159-95b7-2249f0d5903b"></script>
-        <Script src="https://jellyhookapp.vercel.app/tracker.js" data-key="cbf1a6da-544b-4159-95b7-2249f0d5903b"></Script>
+        <script src="https://jellyhookapp.vercel.app/tracker.js"  data-key="8de0ec4e-3487-43c5-a399-5cf8d65459cb"></script>
+        <Script src="https://jellyhookapp.vercel.app/tracker.js"  data-key="8de0ec4e-3487-43c5-a399-5cf8d65459cb"></Script>
         <Script
           src="https://jellyhookapp.vercel.app/tracker.js"
-          data-key="cbf1a6da-544b-4159-95b7-2249f0d5903b"
+           data-key="8de0ec4e-3487-43c5-a399-5cf8d65459cb"
           strategy="afterInteractive"
         />
       </body>
